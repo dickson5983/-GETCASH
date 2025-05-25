@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify OTP - GetCash</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 1rem;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #6c5ce7;
+      margin-bottom: 1rem;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input {
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #5947d7;
+    }
+
+    .message {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .message.error {
+      color: red;
+    }
+
+    .message.success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Enter OTP</h2>
+    <input type="text" id="otp" placeholder="Enter OTP Code" />
+    <button onclick="verifyOtp()">Verify</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://jfdotsvfxtqrwcmpramg.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmZG90c3ZmeHRxcndjbXByYW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxMDQ1MzIsImV4cCI6MjA2MzY4MDUzMn0.TkiD437ReQ8xc7J8wCB68oOZdxqPU-ltvuFAzAF5ypY'
+    );
+
+    async function verifyOtp() {
+      const otp = document.getElementById('otp').value.trim();
+      const phone = localStorage.getItem('phone');
+      const referral = localStorage.getItem('ref');
+      const messageEl = document.getElementById('message');
+
+      if (!otp) {
+        messageEl.textContent = "Enter the OTP.";
+        messageEl.className = "message error";
+        return;
+      }
+
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token: otp,
+        type: 'sms',
+      });
+
+      if (error) {
+        messageEl.textContent = error.message;
+        messageEl.className = "message error";
+      } else {
+        // Save user data in 'users' table
+        const user = data.session.user;
+        await supabase.from('users').upsert({
+          id: user.id,
+          phone: phone,
+          referral: referral || null,
+          earnings: 0,
+          created_at: new Date()
+        });
+
+        // Reward referrer
+        if (referral) {
+          await supabase.rpc('add_referral_bonus', { ref_phone: referral });
+        }
+
+        messageEl.textContent = "Verified! Redirecting...";
+        messageEl.className = "message success";
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1500);
+      }
+    }
+  </script>
+</body>
+</html>
