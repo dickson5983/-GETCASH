@@ -1,103 +1,58 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GetCash Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head><body>
-  <header>
-    <h1>Welcome to GetCash</h1>
-    <p>Earn weekly by completing simple tasks!</p>
-  </header>  <nav>
-    <ul>
-      <li><a href="#blog">Write Blog</a></li>
-      <li><a href="#meme">Post Meme</a></li>
-      <li><a href="#adclick">Click Ad</a></li>
-      <li><a href="#referral">Referrals</a></li>
-    </ul>
-  </nav>  <main>
-    <section id="wallets">
-      <h2>Your Wallets</h2>
-      <p>Blog Wallet: KES <span id="blogWallet">0</span></p>
-      <p>Meme Wallet: KES <span id="memeWallet">0</span></p>
-      <p>Ad Wallet: KES <span id="adWallet">0</span></p>
-      <p>Main Wallet: KES <span id="mainWallet">0</span></p>
-    </section><section id="blog">
-  <h2>Write a Blog</h2>
-  <p>Available only on Mondays</p>
-  <textarea id="blogContent" placeholder="Write your blog post here..."></textarea>
-  <button onclick="submitBlog()">Submit Blog</button>
-</section>
+import React from 'react';
 
-<section id="meme">
-  <h2>Post a Meme</h2>
-  <p>Available only on Wednesdays</p>
-  <input type="file" id="memeFile" accept="image/*" />
-  <button onclick="submitMeme()">Submit Meme</button>
-</section>
+// This layout mimics the Linebet structure
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col h-screen bg-[#f0f2f5] font-sans text-sm">
+      
+      {/* 1. TOP HEADER */}
+      <header className="h-14 bg-[#0d2d20] flex items-center px-4 text-white shrink-0">
+        <div className="font-bold text-xl tracking-tighter text-[#77d74f]">LINEBET</div>
+        <nav className="ml-8 space-x-4 hidden md:block">
+          <a href="#" className="hover:text-[#77d74f]">SPORTS</a>
+          <a href="#" className="hover:text-[#77d74f]">LIVE</a>
+          <a href="#" className="hover:text-[#77d74f]">CASINO</a>
+        </nav>
+        <div className="ml-auto flex gap-2">
+          <button className="px-4 py-1 border border-[#77d74f] text-[#77d74f] rounded">Log in</button>
+          <button className="px-4 py-1 bg-[#77d74f] text-black font-bold rounded">Registration</button>
+        </div>
+      </header>
 
-<section id="adclick">
-  <h2>Click Ad</h2>
-  <p>Available only on Fridays</p>
-  <button onclick="clickAd()">Click Ad</button>
-</section>
+      {/* 2. MAIN 3-COLUMN CONTENT */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* LEFT SIDEBAR - SPORTS MENU */}
+        <aside className="w-64 bg-white border-r border-gray-300 overflow-y-auto hidden lg:block">
+          <div className="p-2 bg-gray-100 font-bold text-gray-700">TOP CHAMPIONSHIPS</div>
+          <ul className="divide-y">
+            {['Premier League', 'La Liga', 'Serie A', 'NBA', 'NHL'].map((league) => (
+              <li key={league} className="p-3 hover:bg-gray-100 cursor-pointer flex justify-between group">
+                <span className="group-hover:text-[#77d74f]">{league}</span>
+                <span className="text-gray-400 text-xs">Running</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-<section id="referral">
-  <h2>Referral System</h2>
-  <p>Share your referral link:</p>
-  <input type="text" id="referralLink" readonly />
-  <button onclick="copyReferralLink()">Copy Link</button>
-</section>
+        {/* CENTER - THE ODDS FEED (Dynamic Content) */}
+        <main className="flex-1 overflow-y-auto bg-gray-200 p-2">
+           {/* This is where the Match Rows go */}
+           {children}
+        </main>
 
-  </main>  <footer>
-    <p>&copy; 2025 GetCash. All rights reserved.</p>
-  </footer>  <script>
-    const userEmail = localStorage.getItem("email");
-    const referralLink = https://yourdomain.com/register.html?ref=${userEmail};
-    document.getElementById("referralLink").value = referralLink;
+        {/* RIGHT SIDEBAR - BET SLIP */}
+        <aside className="w-80 bg-white border-l border-gray-300 overflow-y-auto hidden xl:block shadow-lg z-10">
+          <div className="bg-[#77d74f] text-black font-bold p-3 text-center uppercase">
+            Bet Slip
+          </div>
+          <div className="p-4 text-center text-gray-500 mt-10">
+            <p>Your bet slip is empty.</p>
+            <p className="text-xs mt-2">Click on odds to add a selection.</p>
+          </div>
+        </aside>
 
-    function copyReferralLink() {
-      navigator.clipboard.writeText(referralLink);
-      Swal.fire("Copied!", "Referral link copied to clipboard.", "success");
-    }
-
-    function submitBlog() {
-      const today = new Date().getDay();
-      if (today !== 1) {
-        Swal.fire("Not Allowed", "Blog writing is only available on Mondays.", "error");
-        return;
-      }
-      const blogContent = document.getElementById("blogContent").value;
-      if (blogContent.length < 20) {
-        Swal.fire("Too Short", "Please write a longer blog.", "warning");
-        return;
-      }
-      // Submit to Supabase here
-      Swal.fire("Submitted", "Your blog has been submitted.", "success");
-    }
-
-    function submitMeme() {
-      const today = new Date().getDay();
-      if (today !== 3) {
-        Swal.fire("Not Allowed", "Meme posting is only available on Wednesdays.", "error");
-        return;
-      }
-      const memeFile = document.getElementById("memeFile").files[0];
-      if (!memeFile) {
-        Swal.fire("No File", "Please select a meme to upload.", "warning");
-        return;
-      }
-      // Submit to Supabase here
-      Swal.fire("Submitted", "Your meme has been uploaded.", "success");
-    }
-
-    function clickAd() {
-      const today = new Date().getDay();
-      if (today !== 5) {
-        Swal.fire("Not Allowed", "Ad clicking is only available on Fridays.", "error");
-        return;
-      }
-      // Log ad click here
-      Swal.fire("Clicked!", "You earned KES 20 for clicking the ad.", "success");
-    }
-  </script></body></html>
+      </div>
+    </div>
+  );
+}
